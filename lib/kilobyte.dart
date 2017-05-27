@@ -46,7 +46,7 @@ class Size implements Comparable<Size> {
   int compareTo(Size other) => inBytes.compareTo(other.inBytes);
 
   @override
-  bool operator==(Object other) => other is Size && other.inBytes == inBytes;
+  bool operator ==(Object other) => other is Size && other.inBytes == inBytes;
 
   @override
   int get hashCode => inBytes;
