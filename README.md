@@ -1,5 +1,5 @@
 # kilobyte
 
-A cross-platform human-readable file size library.
+Cross-platform human-readable file size.
 
 **Warning**: This is not an official Google or Dart project.

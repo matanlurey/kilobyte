@@ -1,6 +1,6 @@
 name: kilobyte
 description: >
-  A cross-platform human-readable file size library.
+  Cross-platform human-readable file size.
 version: 0.1.0
 authors:
   - Matan Lurey <matanl@google.com>
