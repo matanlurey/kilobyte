@@ -1,7 +1,7 @@
 name: kilobyte
 description: >
   Cross-platform human-readable file size.
-version: 0.1.0+1
+version: 0.1.0+2
 authors:
   - Matan Lurey <matanl@google.com>
 homepage: https://github.com/matanlurey/kilobyte

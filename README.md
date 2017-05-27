@@ -1,8 +1,8 @@
 # kilobyte
 
 [![pub package](https://img.shields.io/pub/v/kilobyte.svg)](https://pub.dartlang.org/packages/kilobyte)
-[![Build Status](https://travis-ci.org/dart-lang/kilobyte.svg)](https://travis-ci.org/dart-lang/kilobyte)
-[![Coverage Status](https://coveralls.io/repos/github/dart-lang/kilobyte/badge.svg?branch=master)](https://coveralls.io/github/dart-lang/kilobyte?branch=master)
+[![Build Status](https://travis-ci.org/matanlurey/kilobyte.svg)](https://travis-ci.org/matanlurey/kilobyte)
+[![Coverage Status](https://coveralls.io/repos/github/matanlurey/kilobyte/badge.svg?branch=master)](https://coveralls.io/github/matanlurey/kilobyte?branch=master)
 
 Cross-platform human-readable file size.
 

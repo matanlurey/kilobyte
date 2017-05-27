@@ -16,4 +16,10 @@ void main() {
       expect(size.toString(), string);
     });
   });
+
+  test('should implement the `Comparable` interface', () {
+    expect(new Size(bytes: 10).compareTo(new Size(bytes: 10)), 0);
+    expect(new Size(bytes: 10).compareTo(new Size(bytes: 20)), lessThan(0));
+    expect(new Size(bytes: 20).compareTo(new Size(bytes: 10)), greaterThan(0));
+  });
 }
