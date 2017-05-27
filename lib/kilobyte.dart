@@ -4,6 +4,8 @@
 
 import 'dart:math';
 
+import 'package:meta/meta.dart';
+
 /// A size of a file or data, such as 8.23 Mb.
 ///
 /// A `Size` represents an amount of bytes that in turn can be converted to any
@@ -22,6 +24,7 @@ class Size implements Comparable<Size> {
   /// * All arguments are `0` by default.
   ///
   /// It is illegal (but not checked) to pass `null` for any value.
+  @literal
   const Size({
     int bytes: 0,
     int kilobytes: 0,
