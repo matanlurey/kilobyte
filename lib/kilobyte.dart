@@ -65,7 +65,7 @@ class Size implements Comparable<Size> {
   /// Throws [IntegerDivisionByZeroException] if other is exactly 0 bytes.
   Size operator ~/(Size other) {
     if (other.inBytes == 0) {
-      throw new IntegerDivisionByZeroException();
+      throw const IntegerDivisionByZeroException();
     }
     return new Size._bytes(inBytes ~/ other.inBytes);
   }
@@ -103,7 +103,7 @@ class Size implements Comparable<Size> {
   /// Number of petabytes represented.
   num get inPetabytes => inBytes / _bytesInPetabytes;
 
-  static num _log10(num x) => log(x) * LOG10E;
+  static num _log10(num x) => log(x) * log10e;
 
   @override
   String toString() {
