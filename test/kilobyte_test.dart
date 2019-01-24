@@ -5,6 +5,8 @@
 import 'package:kilobyte/kilobyte.dart';
 import 'package:test/test.dart';
 
+// ignore_for_file: prefer_const_constructors
+
 void main() {
   test('should convert bytes to human readable strings', () {
     const {
