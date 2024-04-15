@@ -4,9 +4,7 @@ A measurement of payload or footprint, such as `3.12mb`, based on the IEC
 standard.
 
 [![Pub Package](https://img.shields.io/pub/v/kilobyte.svg)](https://pub.dev/packages/kilobyte)
-
 [![Github Actions](https://github.com/matanlurey/kilobyte/actions/workflows/check.yaml/badge.svg)](https://github.com/matanlurey/kilobyte/actions/workflows/check.yaml)
-
 [![Coverage Status](https://coveralls.io/repos/github/matanlurey/kilobyte/badge.svg)](https://coveralls.io/github/matanlurey/kilobyte)
 
 ## Usage
