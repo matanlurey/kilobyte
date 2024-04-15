@@ -1,122 +1,190 @@
-// Copyright 2017, Google Inc.  Please see the AUTHORS file
-// for details. All rights reserved. Use of this source code is governed by a
-// BSD-style license that can be found in the LICENSE file.
-
-import 'dart:math';
-
 import 'package:meta/meta.dart';
 
-/// A size of a file or data, such as 8.23 Mb.
+/// A measurment of payload or footprint, such as `3.12mb` or `312 kilobytes`.
 ///
-/// A `Size` represents an amount of bytes that in turn can be converted to any
-/// other understandable size (such as kilobytes, megabytes, etc) and output as
-/// a human-readable string.
-class Size implements Comparable<Size> {
-  static const _bytesInKilobyte = 1000;
-  static const _bytesInMegabyte = 1000 * _bytesInKilobyte;
-  static const _bytesInGigabyte = 1000 * _bytesInMegabyte;
-  static const _bytesInTerabyte = 1000 * _bytesInGigabyte;
-  static const _bytesInPetabytes = 1000 * _bytesInTerabyte;
-
-  /// Creates a new size object whose value is the sum of all individual parts.
+/// A [Size] represents an amount of data. The size may be "negative" to
+/// represent size being reduced, such as when data is compressed or removed.
+///
+/// Sizes are based on the IEC standard; 1 kilobyte is 1024 bytes and so on.
+@immutable
+final class Size implements Comparable<Size> {
+  /// Creates a new [Size] object whose value is the sum of all its arguments.
   ///
-  /// * All individual parts are allowed to be negative.
-  /// * All arguments are `0` by default.
+  /// The individual argmuments can be larger than the number in the argument
+  /// in the next larger unit. For example, `Size(kilobytes: 2048)` is the same
+  /// as `Size(megabytes: 1, kilobytes: 1024)`. Likewise, arguments can be
+  /// negative, in which case they underflow and subtract from the total.
   ///
-  /// It is illegal (but not checked) to pass `null` for any value.
-  @literal
+  /// If the total number of bytes cannot be represented an [int], the number
+  /// of bytes might overflow and be truncated to a small number of bits, or
+  /// it might lose precision.
+  ///
+  /// ```dart
+  /// const size = Size(
+  ///   terabytes: 1,
+  ///   gigabytes: 2,
+  /// );
+  /// print(size); // 1.002tb
+  /// ```
   const Size({
-    int bytes: 0,
-    int kilobytes: 0,
-    int megabytes: 0,
-    int gigabytes: 0,
-    int terabytes: 0,
-    int petabytes: 0,
-  }) : inBytes = bytes +
-            kilobytes * _bytesInKilobyte +
-            megabytes * _bytesInMegabyte +
-            gigabytes * _bytesInGigabyte +
-            terabytes * _bytesInTerabyte +
-            petabytes * _bytesInPetabytes;
+    int petabytes = 0,
+    int terabytes = 0,
+    int gigabytes = 0,
+    int megabytes = 0,
+    int kilobytes = 0,
+    int bytes = 0,
+  }) : this._(
+          0 +
+              petabytes * 1024 * 1024 * 1024 * 1024 * 1024 +
+              terabytes * 1024 * 1024 * 1024 * 1024 +
+              gigabytes * 1024 * 1024 * 1024 +
+              megabytes * 1024 * 1024 +
+              kilobytes * 1024 +
+              bytes,
+        );
 
-  const Size._bytes(this.inBytes);
+  const Size._(this.inBytes);
+
+  /// The number of total bytes in this size.
+  ///
+  /// For example, a size of one kilobyte has 1024 bytes:
+  /// ```dart
+  /// const size = Size(kilobytes: 1);
+  /// print(size.inBytes); // 1024
+  /// ```
+  final int inBytes;
+
+  /// The number of full kilobytes in this size.
+  ///
+  /// For example, a size of 1536 bytes has 1.5 kilobytes:
+  /// ```dart
+  /// const size = Size(bytes: 1536);
+  /// print(size.inKilobytes); // 1
+  /// ```
+  int get inKilobytes => inBytes ~/ 1024;
+
+  /// The number of full megabytes in this size.
+  ///
+  /// For example, a size of 1.5 megabytes has 1536 kilobytes:
+  /// ```dart
+  /// const size = Size(kilobytes: 1536);
+  /// print(size.inMegabytes); // 1
+  /// ```
+  int get inMegabytes => inKilobytes ~/ 1024;
+
+  /// The number of full gigabytes in this size.
+  ///
+  /// For example, a size of 1.5 gigabytes has 1536 megabytes:
+  /// ```dart
+  /// const size = Size(megabytes: 1536);
+  /// print(size.inGigabytes); // 1
+  /// ```
+  int get inGigabytes => inMegabytes ~/ 1024;
+
+  /// The number of full terabytes in this size.
+  ///
+  /// For example, a size of 1.5 terabytes has 1536 gigabytes:
+  /// ```dart
+  /// const size = Size(gigabytes: 1536);
+  /// print(size.inTerabytes); // 1
+  /// ```
+  int get inTerabytes => inGigabytes ~/ 1024;
+
+  /// The number of full petabytes in this size.
+  ///
+  /// For example, a size of 1.5 petabytes has 1536 terabytes:
+  /// ```dart
+  /// const size = Size(terabytes: 1536);
+  /// print(size.inPetabytes); // 1
+  /// ```
+  int get inPetabytes => inTerabytes ~/ 1024;
+
+  /// Adds this size and [other] and returns the sum.
+  Size operator +(Size other) => Size._(inBytes + other.inBytes);
+
+  /// Subtracts [other] from this size and returns the difference.
+  Size operator -(Size other) => Size._(inBytes - other.inBytes);
+
+  /// Multiplies this size by [factor] and returns the product.
+  ///
+  /// When [factor] is a double, the resulting size is rounded up:
+  /// ```dart
+  /// const size = Size(kilobytes: 1) * 1.15;
+  /// print(size.inBytes); // 1178, even though 1.15 * 1024 is 1177.6
+  Size operator *(num factor) => Size._((inBytes * factor).ceil());
+
+  /// Divides this size by [divisor] and returns the quotient.
+  ///
+  /// When the result is not an integer, the quotient is rounded down:
+  /// ```dart
+  /// const size = Size(kilobytes: 1) / 3;
+  /// print(size.inBytes); // 341, even though 1024 / 3 is 341.333...
+  /// ```
+  ///
+  /// The [quotient] must not be `0`.
+  Size operator ~/(int quotient) {
+    if (quotient == 0) {
+      throw ArgumentError.value(quotient, 'quotient', 'Cannot divide by zero');
+    }
+    return Size._(inBytes ~/ quotient);
+  }
+
+  /// Returns the absolute length of this size.
+  Size abs() => Size._(inBytes.abs());
+
+  /// Whether this size is negative.
+  bool get isNegative => inBytes.isNegative;
+
+  /// Returns a new size with the opposite sign of this size.
+  Size operator -() => Size._(-inBytes);
+
+  /// Whether this size is less than [other].
+  bool operator <(Size other) => inBytes < other.inBytes;
+
+  /// Whether this size is less than or equal to [other].
+  bool operator <=(Size other) => inBytes <= other.inBytes;
+
+  /// Whether this size is greater than [other].
+  bool operator >(Size other) => inBytes > other.inBytes;
+
+  /// Whether this size is greater than or equal to [other].
+  bool operator >=(Size other) => inBytes >= other.inBytes;
+
+  @override
+  bool operator ==(Object other) => other is Size && inBytes == other.inBytes;
+
+  @override
+  int get hashCode => inBytes.hashCode;
 
   @override
   int compareTo(Size other) => inBytes.compareTo(other.inBytes);
 
-  @override
-  bool operator ==(Object other) => other is Size && other.inBytes == inBytes;
-
-  @override
-  int get hashCode => inBytes;
-
-  /// Adds the size and the [other] and returns the sum.
-  Size operator +(Size other) => new Size._bytes(inBytes + other.inBytes);
-
-  /// Subtracts the size by the [other] and returns the difference.
-  Size operator -(Size other) => new Size._bytes(inBytes - other.inBytes);
-
-  /// Multiples the size by the [other] and returns the result.
-  Size operator *(Size other) => new Size._bytes(inBytes * other.inBytes);
-
-  /// Divides the size by the [other] and returns the (truncated) result.
+  /// Returns a string representation of this size suitable as a default.
   ///
-  /// Throws [IntegerDivisionByZeroException] if other is exactly 0 bytes.
-  Size operator ~/(Size other) {
-    if (other.inBytes == 0) {
-      throw const IntegerDivisionByZeroException();
-    }
-    return new Size._bytes(inBytes ~/ other.inBytes);
-  }
-
-  /// Returns `true` if the this size is less than the [other].
-  bool operator <(Size other) => inBytes < other.inBytes;
-
-  /// Returns `true` if the this size is greater than the [other].
-  bool operator >(Size other) => inBytes > other.inBytes;
-
-  /// Returns `true` if the this size is less than or equal to [other].
-  bool operator <=(Size other) => inBytes <= other.inBytes;
-
-  /// Returns `true` if the this size is greater than or equal to [other].
-  bool operator >=(Size other) => inBytes >= other.inBytes;
-
-  /// Returns a new size object representing this size negated.
-  Size operator -() => new Size._bytes(0 - inBytes);
-
-  /// Number of whole bytes represented.
-  final int inBytes;
-
-  /// Number of kilobytes represented.
-  num get inKilobytes => inBytes / _bytesInKilobyte;
-
-  /// Number of megabytes represented.
-  num get inMegabytes => inBytes / _bytesInMegabyte;
-
-  /// Number of gigabytes represented.
-  num get inGigabytes => inBytes / _bytesInGigabyte;
-
-  /// Number of terabytes represented.
-  num get inTerabytes => inBytes / _bytesInTerabyte;
-
-  /// Number of petabytes represented.
-  num get inPetabytes => inBytes / _bytesInPetabytes;
-
-  static num _log10(num x) => log(x) * log10e;
-
+  /// The largest unit that is not zero is used, and the number is rounded to
+  /// two decimal places by default. For example, `'${Size(kilobytes: 1536)}'`
+  /// is `'1.5mb'`. The smallest unit displayed is kilobytes.
+  ///
+  /// The [fractionDigits] argument can be used to specify the number of digits
+  /// after the decimal point. For example, `'${Size(kilobytes: 1536)}'` with
+  /// `fractionDigits: 0` is `'1mb'`. [fractionDigits] must be non-negative.
+  ///
+  /// The [seperator] argument can be used to specify a string to insert between
+  /// the number and the unit. For example, `'${Size(kilobytes: 1536)}'` with
+  /// `seperator: ' '` is `'1 mb'`.
   @override
-  String toString() {
-    const units = const ['B', 'kB', 'MB', 'GB', 'TB', 'PB'];
-    final bytes = inBytes.abs();
-    if (!inBytes.isFinite) {
-      return '∞';
-    }
-    if (inBytes == 0) {
-      return '0 B';
-    }
-    final exponent = min((_log10(bytes) / 3).floor(), units.length - 1);
-    final numStr = (bytes / pow(1000, exponent)).toStringAsPrecision(3);
-    final unit = units[exponent];
-    return '${(bytes.isNegative ? '-' : '')}$numStr $unit';
+  String toString({
+    int fractionDigits = 2,
+    String seperator = '',
+  }) {
+    RangeError.checkNotNegative(fractionDigits, 'fractionDigits');
+    final (value, suffix) = switch (abs()) {
+      >= const Size(petabytes: 1) => (inTerabytes / 1024, 'pb'),
+      >= const Size(terabytes: 1) => (inGigabytes / 1024, 'tb'),
+      >= const Size(gigabytes: 1) => (inMegabytes / 1024, 'gb'),
+      >= const Size(megabytes: 1) => (inKilobytes / 1024, 'mb'),
+      _ => (inBytes / 1024, 'kb'),
+    };
+    return '${value.toStringAsFixed(fractionDigits)}$seperator$suffix';
   }
 }

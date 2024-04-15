@@ -1,4 +1,3 @@
 .dart_tool/
-.pub/
-.packages
+coverage/
 pubspec.lock
