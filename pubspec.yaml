@@ -3,6 +3,7 @@
 name: kilobyte
 description: >
   Lightweight human-readable file size representations in Dart.
+repository: https://github.com/matanlurey/kilobyte
 
 version: 0.3.0
 environment:
